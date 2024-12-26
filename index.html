@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大粉丝小玲的生日计时</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+
+        section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+            border: 2px solid #a1c4fd;
+        }
+
+        section:hover {
+            transform: translateY(-5px);
+            border-color: #64b5f6;
+        }
+
+        h2 {
+            color: #1976d2;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.8em;
+        }
+
+        p {
+            line-height: 1.6;
+            margin: 15px 0;
+            text-align: center;
+            font-size: 1.1em;
+        }
+
+        #countdown {
+            font-size: 2em;
+            color: #1976d2;
+            font-weight: bold;
+            display: block;
+            text-align: center;
+            margin: 20px 0;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        #wishes p {
+            color: #666;
+            font-style: italic;
+        }
+
+        footer {
+            text-align: center;
+            color: #fff;
+            padding: 20px;
+            margin-top: 50px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 2em;
+            }
+            #countdown {
+                font-size: 1.5em;
+            }
+        }
+
+        /* 生日礼盒和蛋糕的样式 */
+        .birthday-box {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #ffd6e7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            cursor: pointer;
+        }
+
+        .gift-box {
+            width: 200px;
+            height: 200px;
+            background: #ff69b4;
+            position: relative;
+            animation: bounce 2s infinite;
+        }
+
+        .gift-box::before {
+            content: '🎁';
+            font-size: 100px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .cake-container {
+            text-align: center;
+        }
+
+        .cake {
+            font-size: 100px;
+            margin-bottom: 20px;
+            animation: rotate 2s infinite;
+        }
+
+        .age {
+            font-size: 2em;
+            color: #ff1493;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            animation: scale 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes scale {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .sakura {
+            position: fixed;
+            pointer-events: none;
+            z-index: 999;
+        }
+        
+        @keyframes fall {
+            0% { transform: translateY(-10vh) rotate(0deg); }
+            100% { transform: translateY(100vh) rotate(360deg); }
+        }
+
+        .trail {
+            position: fixed;
+            pointer-events: none;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff69b4, #ff1493);
+            animation: fade 1s ease-out;
+        }
+        
+        @keyframes fade {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(0.5); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 生日礼盒和蛋糕 -->
+    <div id="birthday-animation" style="display: none;">
+        <div class="birthday-box" onclick="showCake()">
+            <div class="gift-box"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>大粉丝王玲的生日计时</h1>
+            <div class="music-player">
+                <button onclick="toggleMusic()" class="music-btn">🎵</button>
+            </div>
+        </header>
+
+        <main>
+            <section id="birthday">
+                <h2>生日信息</h2>
+                <div id="birthday-dates">
+                    <!-- 生日信息将在这里动态插入 -->
+                </div>
+                <p>距离下一次生日还有：</p>
+                <span id="countdown">计算中...</span>
+                <div class="birthday-image">
+                    <img src="images/birthday.jpg" alt="生日快乐" style="
+                        max-width: 80%;
+                        height: auto;
+                        margin: 30px auto;
+                        display: block;
+                        border-radius: 15px;
+                        box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+                        transition: transform 0.3s ease;
+                    ">
+                </div>
+            </section>
+
+            <section>
+                <!-- 生日祝福部分被移除 -->
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2024 大粉丝小玲的生日计时</p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/fireworks-js@latest/dist/fireworks.js"></script>
+    <script>
+        // 存储已知的生日日期
+        const birthdays = {
+            2024: { month: 0, day: 12 },  // 1月12日
+            2025: { month: 0, day: 1 },   // 1月1日
+            2026: { month: 0, day: 20 },  // 1月20日
+            2027: { month: 0, day: 9 },   // 1月9日
+            2028: { month: 0, day: 29 },  // 1月29日
+            2029: { month: 0, day: 17 },  // 1月17日
+            2030: { month: 1, day: 5 },   // 2月5日
+            2031: { month: 0, day: 25 },  // 1月25日
+            2032: { month: 1, day: 13 },  // 2月13日
+            2033: { month: 1, day: 2 },   // 2月2日
+            2034: { month: 0, day: 22 },  // 1月22日
+            2035: { month: 1, day: 10 },  // 2月10日
+            2036: { month: 0, day: 30 },  // 1月30日
+            2037: { month: 1, day: 18 },  // 2月18日
+            2038: { month: 1, day: 7 },   // 2月7日
+            2039: { month: 0, day: 26 },  // 1月26日
+            2040: { month: 1, day: 15 },  // 2月15日
+            2041: { month: 1, day: 4 },   // 2月4日
+            2042: { month: 0, day: 24 },  // 1月24日
+            2043: { month: 1, day: 12 },  // 2月12日
+            2044: { month: 1, day: 1 },   // 2月1日
+            2045: { month: 0, day: 21 },  // 1月21日
+            2046: { month: 1, day: 9 },   // 2月9日
+            2047: { month: 0, day: 28 },  // 1月28日
+            2048: { month: 1, day: 16 },  // 2月16日
+            2049: { month: 1, day: 5 },   // 2月5日
+            2050: { month: 0, day: 25 },  // 1月25日
+            2051: { month: 1, day: 13 },  // 2月13日
+            2052: { month: 1, day: 2 },   // 2月2日
+            2053: { month: 0, day: 22 },  // 1月22日
+            2054: { month: 1, day: 10 },  // 2月10日
+            2055: { month: 0, day: 30 },  // 1月30日
+            2056: { month: 1, day: 18 },  // 2月18日
+            2057: { month: 1, day: 7 },   // 2月7日
+            2058: { month: 0, day: 26 },  // 1月26日
+            2059: { month: 1, day: 14 },  // 2月14日
+            2060: { month: 1, day: 3 },   // 2月3日
+            2061: { month: 0, day: 23 },  // 1月23日
+            2062: { month: 1, day: 11 },  // 2月11日
+            2063: { month: 0, day: 31 },  // 1月31日
+            2064: { month: 1, day: 19 },  // 2月19日
+            2065: { month: 1, day: 7 },   // 2月7日
+            2066: { month: 0, day: 27 },  // 1月27日
+            2067: { month: 1, day: 15 },  // 2月15日
+            2068: { month: 1, day: 4 },   // 2月4日
+            2069: { month: 0, day: 23 },  // 1月23日
+            2070: { month: 1, day: 12 },  // 2月12日
+            2071: { month: 1, day: 1 },   // 2月1日
+            2072: { month: 0, day: 22 },  // 1月22日
+            2073: { month: 1, day: 9 },   // 2月9日
+            2074: { month: 0, day: 29 },  // 1月29日
+            2075: { month: 1, day: 17 },  // 2月17日
+            2076: { month: 1, day: 6 },   // 2月6日
+            2077: { month: 0, day: 25 },  // 1月25日
+            2078: { month: 1, day: 13 },  // 2月13日
+            2079: { month: 1, day: 3 },   // 2月3日
+            2080: { month: 0, day: 23 },  // 1月23日
+            2081: { month: 1, day: 10 },  // 2月10日
+            2082: { month: 0, day: 30 },  // 1月30日
+            2083: { month: 1, day: 19 },  // 2月19日
+            2084: { month: 1, day: 8 },   // 2月8日
+            2085: { month: 0, day: 27 },  // 1月27日
+            2086: { month: 1, day: 15 },  // 2月15日
+            2087: { month: 1, day: 4 },   // 2月4日
+            2088: { month: 0, day: 24 },  // 1月24日
+            2089: { month: 1, day: 11 },  // 2月11日
+            2090: { month: 1, day: 1 },   // 2月1日
+            2091: { month: 0, day: 21 },  // 1月21日
+            2092: { month: 1, day: 9 },   // 2月9日
+            2093: { month: 0, day: 28 },  // 1��28日
+            2094: { month: 1, day: 16 },  // 2月16日
+            2095: { month: 1, day: 8 },   // 2月8日
+            2096: { month: 0, day: 28 },  // 1月28日
+            2097: { month: 1, day: 15 },  // 2月15日
+            2098: { month: 1, day: 4 },   // 2月4日
+            2099: { month: 0, day: 24 }   // 1月24日
+        };
+
+        // 检查是否是生日
+        function checkBirthday(now) {
+            const currentYear = now.getFullYear();
+            if (birthdays[currentYear]) {
+                const birthday = new Date(currentYear, birthdays[currentYear].month, birthdays[currentYear].day);
+                const startTime = new Date(birthday);
+                startTime.setHours(0, 0, 0, 0);
+                
+                const endTime = new Date(birthday);
+                endTime.setHours(23, 59, 59, 999);
+                
+                if (now >= startTime && now <= endTime) {
+                    if (!window.animationShown) {
+                        const birthdayAnimation = document.getElementById('birthday-animation');
+                        birthdayAnimation.style.display = 'block';
+                        birthdayAnimation.innerHTML = `
+                            <div class="birthday-box" onclick="showCake()">
+                                <div class="gift-box"></div>
+                            </div>
+                        `;
+                        window.animationShown = true;
+                    }
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // 获取当前应显示的年份
+        function getCurrentDisplayYears() {
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            
+            // 如果当前年份的生日已经过了，显示下一年和下下年
+            if (birthdays[currentYear]) {
+                const birthday = new Date(currentYear, birthdays[currentYear].month, birthdays[currentYear].day);
+                if (now > birthday) {
+                    return [currentYear + 1, currentYear + 2];
+                }
+            }
+            
+            // 否则显示当前年和下一年
+            return [currentYear, currentYear + 1];
+        }
+
+        // 更新页面显示的生日信息
+        function updateBirthdayDisplay() {
+            const birthdayInfo = document.getElementById('birthday-dates');
+            let html = `<p>小玲的农历生日是2003年十二月初二</p>`;
+            
+            // 获取应显示的年份
+            const years = getCurrentDisplayYears();
+            
+            years.forEach(year => {
+                const date = birthdays[year];
+                if (date) {
+                    html += `<p>${year}年的生日是${date.month + 1}月${date.day}日</p>`;
+                }
+            });
+            
+            birthdayInfo.innerHTML = html;
+        }
+
+        // 计算年龄
+        function calculateAge(birthYear) {
+            const now = new Date();
+            return now.getFullYear() - birthYear;
+        }
+
+        // 显示蛋糕和年龄
+        function showCake() {
+            const birthdayAnimation = document.getElementById('birthday-animation');
+            const age = calculateAge(2003);  // 2003是出年份
+            
+            birthdayAnimation.innerHTML = `
+                <div class="birthday-box">
+                    <div class="cake-container">
+                        <div class="cake">🎂</div>
+                        <div class="age">${age}岁啦！</div>
+                    </div>
+                </div>
+            `;
+            
+            // 5秒后隐藏动画
+            setTimeout(() => {
+                birthdayAnimation.style.display = 'none';
+                // 完全移除动画元素
+                birthdayAnimation.innerHTML = '';
+            }, 5000);
+        }
+
+        function updateCountdown() {
+            // 直接使用新的 Date 对象，不使用缓存
+            const now = new Date(Date.now());
+            
+            const currentYear = now.getFullYear();
+            let nextBirthday = null;
+            let nextYear = currentYear;
+
+            // 查找下一个生日
+            while (!nextBirthday && nextYear <= currentYear + 1) {
+                if (birthdays[nextYear]) {
+                    const birthday = new Date(nextYear, birthdays[nextYear].month, birthdays[nextYear].day);
+                    if (birthday > now) {
+                        nextBirthday = birthday;
+                    }
+                }
+                nextYear++;
+            }
+
+            // 检查是否是生日当天
+            const isBirthday = checkBirthday(now);
+
+            if (isBirthday) {
+                const age = calculateAge(2003);
+                document.getElementById('countdown').innerHTML = 
+                    `<div class="birthday-wish" style="
+                        color: #ff1493;
+                        font-size: 1.5em;
+                        animation: rainbow 2s linear infinite;
+                        text-shadow: 0 0 10px rgba(255,20,147,0.5);
+                    ">
+                        ✨ 小玲大王${age}岁生日快乐 天天开心 ✨
+                    </div>`;
+                // 显示烟花效果
+                showFireworks();
+                return;
+            }
+
+            // 如果找不到下一个生日，显示提示信息
+            if (!nextBirthday) {
+                document.getElementById('countdown').innerHTML = "请更新未来的生日日期";
+                return;
+            }
+
+            // 计算倒计时
+            const diff = nextBirthday - now;
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+            document.getElementById('countdown').innerHTML = 
+                `${days}天 ${hours}小时 ${minutes}分钟 ${seconds}秒`;
+        }
+
+        // 分离生日信息更新逻辑，使用较低的更新频率
+        setInterval(updateBirthdayDisplay, 1000);
+
+        // 初始化
+        updateBirthdayDisplay();
+        updateCountdown();
+        // 使用 requestAnimationFrame 来优化性能
+        function animate() {
+            updateCountdown();
+            requestAnimationFrame(animate);
+        }
+        requestAnimationFrame(animate);
+
+        // 添加彩虹动画
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes rainbow {
+                0% { color: #ff1493; }
+                25% { color: #ff69b4; }
+                50% { color: #ff4500; }
+                75% { color: #ff69b4; }
+                100% { color: #ff1493; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // 创建樱花
+        function createSakura() {
+            const sakura = document.createElement('div');
+            sakura.className = 'sakura';
+            sakura.textContent = '🌸';
+            sakura.style.left = Math.random() * 100 + 'vw';
+            sakura.style.fontSize = Math.random() * 20 + 10 + 'px';
+            sakura.style.animation = `fall ${Math.random() * 3 + 2}s linear`;
+            document.body.appendChild(sakura);
+            
+            setTimeout(() => sakura.remove(), 5000);
+        }
+        
+        // 每500ms创建一个樱花
+        setInterval(createSakura, 500);
+
+        // 修改点击特效的脚本
+        let lastX = 0;
+        let lastY = 0;
+        
+        document.addEventListener('mousemove', (e) => {
+            // 计算鼠标移动速度
+            const dx = e.clientX - lastX;
+            const dy = e.clientY - lastY;
+            const speed = Math.sqrt(dx * dx + dy * dy);
+            
+            // 根据移动速度创建不同数量的粒子
+            const particles = Math.floor(speed / 5) + 1;  // 增加粒子数量
+            
+            for (let i = 0; i < particles; i++) {
+                const trail = document.createElement('div');
+                trail.className = 'trail';
+                
+                // 在鼠标路径上随机分布粒子
+                const offset = Math.random() * speed;
+                trail.style.left = (e.clientX - dx * (offset / speed)) + 'px';
+                trail.style.top = (e.clientY - dy * (offset / speed)) + 'px';
+                
+                // 随机大���和颜色
+                const size = Math.random() * 8 + 3;  // 调整粒子大小范围
+                trail.style.width = size + 'px';
+                trail.style.height = size + 'px';
+                // 随机渐变色
+                const hue = Math.random() * 60 + 330;  // 粉色到紫色的范围
+                trail.style.background = `linear-gradient(135deg, 
+                    hsl(${hue}, 100%, 75%), 
+                    hsl(${hue}, 100%, 50%)
+                )`;
+                
+                document.body.appendChild(trail);
+                setTimeout(() => trail.remove(), 800);  // 稍微缩短持续时间
+            }
+            
+            lastX = e.clientX;
+            lastY = e.clientY;
+        });
+        
+        // 触摸设备支持
+        document.addEventListener('touchmove', (e) => {
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent('mousemove', {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            document.dispatchEvent(mouseEvent);
+        });
+        
+        document.addEventListener('touchstart', () => isDrawing = true);
+        document.addEventListener('touchend', () => isDrawing = false);
+
+        function showFireworks() {
+            // 如果已经有烟花在放，就不要重复创建
+            if (document.querySelector('.fireworks-container')) return;
+            
+            const container = document.createElement('div');
+            container.className = 'fireworks-container';
+            container.style.position = 'fixed';
+            container.style.top = '0';
+            container.style.left = '0';
+            container.style.width = '100%';
+            container.style.height = '100%';
+            container.style.zIndex = '999';
+            document.body.appendChild(container);
+            
+            const fireworks = new Fireworks(container, {
+                rocketsPoint: 50,
+                hue: { min: 0, max: 360 },
+                delay: { min: 10, max: 20 },  // 加快烟花发射频率
+                speed: 2,
+                acceleration: 1.05,
+                friction: 0.95
+            });
+            
+            fireworks.start();
+            setTimeout(() => {
+                fireworks.stop();
+                // 确保完全移除
+                setTimeout(() => {
+                    container.remove();
+                }, 100);
+            }, 5000);  // 5秒后停止
+        }
+    </script>
+</body>
+</html> 
